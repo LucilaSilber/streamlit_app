@@ -22,17 +22,18 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+st.title('Physical Retail In Different Malls')
 shopping_data = pd.read_csv('data/customer_shopping_data.csv')
 shopping_data['price (k)'] = shopping_data.apply(lambda x: x['price']/1000, axis=1)
 
-st.title('Which type of store would generate the maximal profit, for a mall based on historical purchases?')
+st.header('Which type of store would generate the maximal profit, for a mall based on historical purchases?')
 
 
 malls = list(set(shopping_data['shopping_mall']))
 mall_picker = st.selectbox('Which mall would you like to analyze?', options=malls, index = 0)
 mall_df = shopping_data[shopping_data['shopping_mall'] == mall_picker]
 
-st.header(f'What is the largest audience group in \'{mall_picker}\'?')
+st.subheader(f'What is the largest audience group in \'{mall_picker}\'?')
 # generate the treemap chart
 age_min = min(mall_df['age'])
 age_max = max(mall_df['age'])
@@ -71,6 +72,10 @@ fig.update_layout(
 st.write(fig)
 largest_subgroup = df_grouped.loc[df_grouped['count'].idxmax()]
 st.text(f'The largest audience group is {largest_subgroup[0]} of age {largest_subgroup[1]}. The group size is {largest_subgroup[2]}.')
+st.text(f'The goal of this graph is to display the distribution of age vs. gender in the mall \n\'{mall_picker}\' and '
+        f'allow for easy recognition of the largest audience type.')
+st.text(f'The rest of the dashboard will focus on this audience group, by selecting the \ncorrect parameters in the '
+        f'following drop downs.')
 
 # choose audience group
 gender_picker = st.selectbox('Select a Gender', options=['Male','Female'], index = 0)
@@ -90,7 +95,7 @@ else:
     graph_light = male_light_color
 
 # generate a categories\profit bar chart
-st.header(f'What are the favorite category and the most profitable one for {gender_picker}s of age {age_picker} in \'{mall_picker}\'?')
+st.subheader(f'What are the favorite category and the most profitable one for {gender_picker}s of age {age_picker} in \'{mall_picker}\'?')
 category_profit = audiance_mall.groupby('category').agg({'price (k)': ['size', 'sum']}).reset_index()
 category_profit.columns = ['Category', '# purchases', 'Total profit (k$)']
 
@@ -108,9 +113,11 @@ profitable3 = list(category_profit.sort_values(by='Total profit (k$)',ascending=
 st.markdown(f'**1) Top visited category:** {top3[0]}, **Most profitable:** {profitable3[0]}')
 st.markdown(f'**2) Top visited category:** {top3[1]}, **Most profitable:** {profitable3[1]}')
 st.markdown(f'**3) Top visited category:** {top3[2]}, **Most profitable:** {profitable3[2]}')
+st.text(f'This graph is filtered by the previous drop-downs and displays the \npopularity and profit distributions per category.')
+st.text(f'The color scheme represents the selected gender.')
 
 #generate category trendlines
-st.header(f'Trendlines over time per category for {gender_picker}s of age {age_picker} in \'{mall_picker}\'')
+st.subheader(f'Trendlines over time per category for {gender_picker}s of age {age_picker} in \'{mall_picker}\'')
 audiance_mall['invoice_date'] = pd.to_datetime(audiance_mall['invoice_date'],format="%d/%m/%Y")
 audiance_mall['month_year'] = audiance_mall['invoice_date'].dt.strftime('%Y-%m')
 # Define start and end dates
@@ -172,3 +179,7 @@ else:
     for y in years_list:
         fig5.add_vline(x=y, line_width=1, line_color="gray")
     st.write(fig5)
+
+st.text(f'The graph displays the categories\' trendlines over time. By default the displayed \ncategories are the top 2 '
+        f'options based on # of visits, but the rest can be \nadded using a drop-down.')
+st.text(f'It is filtered by date range, categories\' and a selection of data: profit or \n# of purchases')

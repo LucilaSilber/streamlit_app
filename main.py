@@ -44,10 +44,31 @@ age_bins_str = [(str(bin_value)) for bin_value in mall_df['age_bin']]
 mall_df['age_bin'] = age_bins_str
 df_grouped = mall_df.groupby(['gender', 'age_bin']).size().reset_index(name='count')
 
-fig = px.treemap(df_grouped, path=['gender', 'age_bin'], values='count',color='gender', color_discrete_map={'(?)':'lightgrey', 'Female':female_color, 'Male':male_color})
-fig.update_layout(margin = dict(l=5,r=5,b=10, t=10), paper_bgcolor= background_color)
-st.write(fig)
+fig = go.Figure()
+# Add bars for each gender
+for gender in df_grouped['gender'].unique():
+    if gender == 'Male':
+        fig.add_trace(go.Bar(
+            x=df_grouped[df_grouped['gender'] == gender]['age_bin'],
+            y=df_grouped[df_grouped['gender'] == gender]['count'],
+            name=gender,
+            marker_color=male_color
+        ))
+    else:
+        fig.add_trace(go.Bar(
+            x=df_grouped[df_grouped['gender'] == gender]['age_bin'],
+            y=df_grouped[df_grouped['gender'] == gender]['count'],
+            name=gender,
+            marker_color=female_color
+        ))
 
+# Update layout
+fig.update_layout(
+    xaxis_title='Age Bins',
+    yaxis_title='Count',
+    margin = dict(l=5,r=5,b=10, t=10), paper_bgcolor= background_color
+)
+st.write(fig)
 largest_subgroup = df_grouped.loc[df_grouped['count'].idxmax()]
 st.text(f'The largest audience group is {largest_subgroup[0]} of age {largest_subgroup[1]}. The group size is {largest_subgroup[2]}.')
 
